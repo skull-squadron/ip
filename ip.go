@@ -14,6 +14,7 @@ var ipv4InIPv6Prefix = []byte{
   // A,    B,    C,    D
 }
 
+// conforms to interface net.Addr
 type IP struct {
   *net.IPNet
   Zone string
@@ -67,7 +68,7 @@ func Parse(s string) (r IP, err error) {
     return
   }
 
-  r.IPNet = &net.IPNet{ip, net.CIDRMask(len(ip)*8, 0)}
+  r.IPNet = &net.IPNet{ip, nil}
   return
 }
 
@@ -128,7 +129,7 @@ func (n IP) Interfaces() (ifaces []net.Interface, err error) {
 
 // iface: nil = any interface
 func (n IP) ContainsWithInterface(ip net.IP, iface *net.Interface) bool {
-  return n.CompareZoneToInterface(iface) && n.IPNet.Contains(ip)
+  return n.CompareZoneToInterface(iface) && (n.IPNet.Contains(ip) || n.IPNet.IP.Equal(ip))
 }
 
 // any interface is allowed
@@ -140,9 +141,14 @@ func (n IP) Network() string {
   return "ip+net+zone"
 }
 
-func (n IP) String() string {
-  if n.HasZone() {
-    return (*n.IPNet).String() + ZoneSep + n.Zone
+func (n IP) String() (s string) {
+  if n.IPNet.Mask == nil {
+    s = n.IPNet.IP.String()
+  } else {
+    s = n.IPNet.String()
   }
-  return (*n.IPNet).String()
+  if n.HasZone() {
+    s += ZoneSep + n.Zone
+  }
+  return
 }
