@@ -7,13 +7,6 @@ import (
   "strings"
 )
 
-var ipv4InIPv6Prefix = []byte{
-  0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0xFF, 0xFF,
-  // A,    B,    C,    D
-}
-
 // conforms to interface net.Addr
 type IP struct {
   *net.IPNet
@@ -90,10 +83,7 @@ func (n IP) IsIPv6() bool {
 }
 
 func (n IP) IsIPv4() bool {
-  if len(n.IPNet.IP) == 4 {
-    return true
-  }
-  return bytes.Compare(n.IPNet.IP[:len(ipv4InIPv6Prefix)], ipv4InIPv6Prefix) == 0
+  return n.IPNet.IP.To4() != nil
 }
 
 func (n IP) IsNetwork() bool {
