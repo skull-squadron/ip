@@ -101,24 +101,30 @@ func (n IP) EqualInterface(iface *net.Interface) bool {
 }
 
 // no zone = all interfaces
-func (n IP) Interfaces() (ifaces []net.Interface) {
+func (n IP) Interfaces() (ifaces []net.Interface, err error) {
   if !n.HasZone() {
-    ifaces, _ = net.Interfaces()
+    ifaces, err = net.Interfaces()
     return
   }
-  iface, err := net.InterfaceByName(n.Zone)
+  iface, err := n.Interface()
   if err != nil {
-    ifaces = []net.Interface{}
-  } else {
-    ifaces = []net.Interface{*iface}
+    return
   }
+  ifaces = append(ifaces, *iface)
   return
 }
 
+// convert Zone to net.Interface
+func (n IP) Interface() (*net.Interface, error) {
+  return net.InterfaceByName(n.Zone)
+}
+
+// convert ip.IP to net.IPNet
 func (n IP) IPNet() *net.IPNet {
   return &net.IPNet{IP: n.IP, Mask: n.Mask}
 }
 
+// convert ip.IP to net.IPAddr
 func (n IP) IPAddr() net.IPAddr {
   return net.IPAddr{IP: n.IP, Zone: n.Zone}
 }
@@ -128,7 +134,6 @@ func (n IP) ContainsWithInterface(ip net.IP, iface *net.Interface) bool {
   return n.EqualInterface(iface) && (n.IP.Equal(ip) || n.IPNet().Contains(ip))
 }
 
-// any interface is allowed
 func (n IP) Contains(ip net.IP) bool {
   return n.ContainsWithInterface(ip, nil /* any interface */)
 }

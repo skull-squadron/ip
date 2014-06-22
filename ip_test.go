@@ -99,7 +99,10 @@ func TestContains(t *testing.T) {
 
 func TestInterfaces(t *testing.T) {
   x, _ := Parse("80.0.0.0/8")
-  ifaces := x.Interfaces()
+  ifaces, err := x.Interfaces()
+  if err != nil {
+    t.Errorf("Interfaces() failed, err=", err)
+  }
   for _, iface := range ifaces {
     t.Logf("Interface: iface=", iface)
   }
