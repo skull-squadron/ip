@@ -80,9 +80,6 @@ func (n IP) IsIPv4() bool {
 }
 
 func (n IP) IsNetwork() bool {
-  if n.IPNet.Mask == nil {
-    return false
-  }
   for _, v := range n.IPNet.Mask {
     if v != 0xff {
       return true
