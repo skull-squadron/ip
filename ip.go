@@ -66,28 +66,9 @@ func Parse(s string) (r IP, err error) {
 }
 
 func (n IP) Equal(n2 IP) bool {
-  if !n.EqualZone(n2.Zone) {
-    return false
-  }
-
-  if !n.IPNet.IP.Equal(n2.IPNet.IP) {
-    return false
-  }
-
-  if n.IPNet.Mask == nil && n2.IPNet.Mask == nil {
-    return true
-  }
-  if n.IPNet.Mask == nil && n2.IPNet.Mask != nil {
-    return false
-  }
-  if n.IPNet.Mask != nil && n2.IPNet.Mask == nil {
-    return false
-  }
-  if bytes.Compare(n.IPNet.Mask, n2.IPNet.Mask) != 0 {
-    return false
-  }
-
-  return true
+  return n.EqualZone(n2.Zone) &&
+    n.IPNet.IP.Equal(n2.IPNet.IP) &&
+    bytes.Compare(n.IPNet.Mask, n2.IPNet.Mask) == 0
 }
 
 func (n IP) IsIPv6() bool {
