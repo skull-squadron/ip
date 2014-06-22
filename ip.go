@@ -9,8 +9,9 @@ import (
 
 // conforms to interface net.Addr
 type IP struct {
-  *net.IPNet
-  Zone string
+  IP   net.IP
+  Mask net.IPMask
+  Zone string // used with IPv4 and IPv6 to indicate interface name
 }
 
 const (
@@ -47,26 +48,27 @@ func Parse(s string) (r IP, err error) {
     return
   }
 
-  _, r.IPNet, _ = net.ParseCIDR(s)
+  _, ipnet, _ := net.ParseCIDR(s)
 
-  if r.IPNet != nil { // we're done
+  if ipnet != nil { // we're done
+    r.IP = ipnet.IP
+    r.Mask = ipnet.Mask
     return
   }
 
-  ip := net.ParseIP(s)
-  if ip == nil {
+  r.IP = net.ParseIP(s)
+  if r.IP == nil {
     err = errors.New("Bad IPv4/v6 IP addr or network")
     return
   }
 
-  r.IPNet = &net.IPNet{ip, nil}
   return
 }
 
 func (n IP) Equal(n2 IP) bool {
   return n.EqualZone(n2.Zone) &&
-    n.IPNet.IP.Equal(n2.IPNet.IP) &&
-    bytes.Compare(n.IPNet.Mask, n2.IPNet.Mask) == 0
+    n.IP.Equal(n2.IP) &&
+    bytes.Compare(n.Mask, n2.Mask) == 0
 }
 
 func (n IP) IsIPv6() bool {
@@ -74,11 +76,11 @@ func (n IP) IsIPv6() bool {
 }
 
 func (n IP) IsIPv4() bool {
-  return n.IPNet.IP.To4() != nil
+  return n.IP.To4() != nil
 }
 
 func (n IP) IsNetwork() bool {
-  for _, v := range n.IPNet.Mask {
+  for _, v := range n.Mask {
     if v != 0xff {
       return true
     }
@@ -113,9 +115,13 @@ func (n IP) Interfaces() (ifaces []net.Interface) {
   return
 }
 
+func (n IP) IPNet() *net.IPNet {
+  return &net.IPNet{IP: n.IP, Mask: n.Mask}
+}
+
 // iface: nil = any interface
 func (n IP) ContainsWithInterface(ip net.IP, iface *net.Interface) bool {
-  return n.EqualInterface(iface) && (n.IPNet.Contains(ip) || n.IPNet.IP.Equal(ip))
+  return n.EqualInterface(iface) && (n.IP.Equal(ip) || n.IPNet().Contains(ip))
 }
 
 // any interface is allowed
@@ -128,10 +134,10 @@ func (n IP) Network() string {
 }
 
 func (n IP) String() (s string) {
-  if n.IPNet.Mask == nil {
-    s = n.IPNet.IP.String()
+  if n.Mask == nil {
+    s = n.IP.String()
   } else {
-    s = n.IPNet.String()
+    s = n.IPNet().String()
   }
   if n.HasZone() {
     s += ZoneSep + n.Zone
