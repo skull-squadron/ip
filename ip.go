@@ -20,15 +20,13 @@ const (
 
 func ParseZone(s string) (ip, zone string, err error) {
   parts := strings.Split(s, ZoneSep)
-  if len(parts) != 1 && len(parts) != 2 {
+  switch len(parts) {
+  case 1:
+    ip, zone = s, NoZone
+  case 2:
+    ip, zone = parts[0], parts[1]
+  default:
     err = errors.New("Address/network may may contain only one '%': <addr>%<zone>")
-    return
-  }
-  ip = parts[0]
-  if len(parts) == 2 {
-    zone = parts[1]
-  } else {
-    zone = NoZone
   }
   return
 }
