@@ -26,7 +26,7 @@ func ParseZone(s string) (ip, zone string, err error) {
   case 2:
     ip, zone = parts[0], parts[1]
   default:
-    err = errors.New("Address/network may may contain only one '%': <addr>%<zone>")
+    err = errors.New("IP may contain only one '%': <ip>%<zone>")
   }
   return
 }
