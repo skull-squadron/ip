@@ -135,7 +135,16 @@ func (n IP) IPAddr() net.IPAddr {
 
 // iface: nil = any interface
 func (n IP) ContainsWithInterface(ip net.IP, iface *net.Interface) bool {
-  return n.EqualInterface(iface) && (n.IP.Equal(ip) || n.IPNet().Contains(ip))
+  if !n.EqualInterface(iface) {
+    return false
+  }
+
+  ipnet := n.IPNet()
+  if ipnet == nil {
+    return n.IP.Equal(ip)
+  }
+
+  return ipnet.Contains(ip)
 }
 
 func (n IP) Contains(ip net.IP) bool {
