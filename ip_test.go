@@ -120,6 +120,8 @@ func TestString(t *testing.T) {
     j, _ := Parse(stringCase.x)
     if s := j.String(); strings.ToUpper(s) != strings.ToUpper(stringCase.x) {
       t.Errorf("String() failed (%s != %s)", s, stringCase.x)
+    } else {
+      t.Logf("String() success (%s == %s)", s, stringCase.x)
     }
   }
 }

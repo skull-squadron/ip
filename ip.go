@@ -3,6 +3,7 @@ package ip
 import (
   "bytes"
   "errors"
+  "fmt"
   "net"
   "strings"
 )
@@ -121,6 +122,9 @@ func (n IP) Interface() (*net.Interface, error) {
 
 // convert ip.IP to net.IPNet
 func (n IP) IPNet() *net.IPNet {
+  if n.Mask == nil {
+    return nil
+  }
   return &net.IPNet{IP: n.IP, Mask: n.Mask}
 }
 
@@ -143,13 +147,18 @@ func (n IP) Network() string {
 }
 
 func (n IP) String() (s string) {
-  if n.Mask == nil {
-    s = n.IP.String()
+  ipnet := n.IPNet()
+  if ipnet != nil {
+    s = ipnet.String()
   } else {
-    s = n.IPNet().String()
+    s = n.IP.String()
   }
   if n.HasZone() {
     s += ZoneSep + n.Zone
   }
   return
+}
+
+func (n IP) Inspect() string {
+  return fmt.Sprint("ip.IP(IP: ", n.IP, ", Mask: ", n.Mask, ", Zone: ", n.Zone)
 }
