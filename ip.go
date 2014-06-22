@@ -119,6 +119,10 @@ func (n IP) IPNet() *net.IPNet {
   return &net.IPNet{IP: n.IP, Mask: n.Mask}
 }
 
+func (n IP) IPAddr() net.IPAddr {
+  return net.IPAddr{IP: n.IP, Zone: n.Zone}
+}
+
 // iface: nil = any interface
 func (n IP) ContainsWithInterface(ip net.IP, iface *net.Interface) bool {
   return n.EqualInterface(iface) && (n.IP.Equal(ip) || n.IPNet().Contains(ip))
