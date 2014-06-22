@@ -65,16 +65,28 @@ func Parse(s string) (r IP, err error) {
   return
 }
 
-func (n IP) Compare(n2 IP) bool {
-  if !n.CompareZone(n2.Zone) {
+func (n IP) Equal(n2 IP) bool {
+  if !n.EqualZone(n2.Zone) {
     return false
   }
-  if bytes.Compare(n.IPNet.IP, n2.IPNet.IP) != 0 {
+
+  if !n.IPNet.IP.Equal(n2.IPNet.IP) {
+    return false
+  }
+
+  if n.IPNet.Mask == nil && n2.IPNet.Mask == nil {
+    return true
+  }
+  if n.IPNet.Mask == nil && n2.IPNet.Mask != nil {
+    return false
+  }
+  if n.IPNet.Mask != nil && n2.IPNet.Mask == nil {
     return false
   }
   if bytes.Compare(n.IPNet.Mask, n2.IPNet.Mask) != 0 {
     return false
   }
+
   return true
 }
 
@@ -87,6 +99,9 @@ func (n IP) IsIPv4() bool {
 }
 
 func (n IP) IsNetwork() bool {
+  if n.IPNet.Mask == nil {
+    return false
+  }
   for _, v := range n.IPNet.Mask {
     if v != 0xff {
       return true
@@ -99,27 +114,32 @@ func (n IP) HasZone() bool {
   return n.Zone != NoZone
 }
 
-func (n IP) CompareZone(zone string) bool {
+func (n IP) EqualZone(zone string) bool {
   return zone == n.Zone
 }
 
-func (n IP) CompareZoneToInterface(iface *net.Interface) bool {
-  return iface == nil || n.CompareZone(iface.Name)
+func (n IP) EqualInterface(iface *net.Interface) bool {
+  return iface == nil || n.EqualZone(iface.Name)
 }
 
 // no zone = all interfaces
-func (n IP) Interfaces() (ifaces []net.Interface, err error) {
+func (n IP) Interfaces() (ifaces []net.Interface) {
   if !n.HasZone() {
-    return net.Interfaces()
+    ifaces, _ = net.Interfaces()
+    return
   }
   iface, err := net.InterfaceByName(n.Zone)
-  ifaces = []net.Interface{*iface}
+  if err != nil {
+    ifaces = []net.Interface{}
+  } else {
+    ifaces = []net.Interface{*iface}
+  }
   return
 }
 
 // iface: nil = any interface
 func (n IP) ContainsWithInterface(ip net.IP, iface *net.Interface) bool {
-  return n.CompareZoneToInterface(iface) && (n.IPNet.Contains(ip) || n.IPNet.IP.Equal(ip))
+  return n.EqualInterface(iface) && (n.IPNet.Contains(ip) || n.IPNet.IP.Equal(ip))
 }
 
 // any interface is allowed

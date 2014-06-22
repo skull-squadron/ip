@@ -73,7 +73,7 @@ func TestParse(t *testing.T) {
         t.Errorf("Parse(\"%s\") failed (should not be network addr)", validCase.x)
       }
     }
-    if !ipn.CompareZone(validCase.zone) {
+    if !ipn.EqualZone(validCase.zone) {
       t.Errorf("Parse(\"%s\") failed (bad zone %s != %s) %s", validCase.x, ipn.Zone, validCase.zone)
     }
   }
@@ -99,11 +99,7 @@ func TestContains(t *testing.T) {
 
 func TestInterfaces(t *testing.T) {
   x, _ := Parse("80.0.0.0/8")
-  ifaces, err := x.Interfaces()
-  if err != nil {
-    t.Errorf("Interfaces() failed, err=", err)
-    return
-  }
+  ifaces := x.Interfaces()
   for _, iface := range ifaces {
     t.Logf("Interface: iface=", iface)
   }
