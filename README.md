@@ -7,7 +7,7 @@
 import "github.com/steakknife/ip"
 ```
 
-### 
+### Description
 
 ```text
 ip.IP = net.IPAddr + net.IPNet
@@ -16,7 +16,18 @@ ip.IP = net.IPAddr + net.IPNet
   Zone
 ```
 
+### Copyright
 
-Copyright (c) 2014 Barry Allard
+Copyright (c) 2014,2015 Barry Allard
+
+### License
 
 MIT license
+
+### Issues
+
+https://github.com/steakknife/ip/issues
+
+### Feedback
+
+barry (dot) allard (at) gmail (dot) com
